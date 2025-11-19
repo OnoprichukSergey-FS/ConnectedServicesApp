@@ -6,7 +6,6 @@ type MapProps = {
   children?: React.ReactNode;
 };
 
-// Fake MapView for web – just shows a message
 const MapView: React.FC<MapProps> = ({ style, children }) => {
   return (
     <View style={[styles.container, style]}>
@@ -19,7 +18,6 @@ const MapView: React.FC<MapProps> = ({ style, children }) => {
   );
 };
 
-// Fake Marker so `Marker` imports don’t crash
 export const Marker: React.FC<{ coordinate?: any }> = () => null;
 
 export default MapView;

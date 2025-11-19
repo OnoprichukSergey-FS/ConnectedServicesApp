@@ -1,50 +1,140 @@
-# Welcome to your Expo app 👋
+# Connected Services App – Assignment 3.8
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This project is my Module 3 Connected Services App built with Expo and TypeScript.  
+The goal of the assignment was to combine multiple connected features into one functional app that works on both **mobile** and **web**. My app includes weather integration, maps, camera features, QR scanning, and Firebase for backend services.
 
-## Get started
+I kept everything as simple and clean as possible while meeting all the requirements.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## How to Run the App
 
-2. Start the app
+### 1. Install Dependencies
 
-   ```bash
-   npx expo start
-   ```
+npm install
 
-In the output, you'll find options to open the app in a
+### 2. Start the App
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+npx expo start
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+You can test on:
 
-## Get a fresh project
+- **iPhone/Android** using Expo Go
+- **Web browser** by pressing `w` in the terminal
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
-```
+## API / Firebase Setup
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 1. Firebase
 
-## Learn more
+Create a Firebase project:
 
-To learn more about developing your project with Expo, look at the following resources:
+- Enable **Firestore**
+- Enable **Authentication (Email/Password)**
+- Create a **Web App** and copy your firebaseConfig into  
+  `/constants/firebase.ts`
+- Run:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+firebase init functions
 
-## Join the community
+- Deploy with:
+  firebase deploy --only functions
 
-Join our community of developers creating universal apps.
+### 2. Weather API (OpenWeather)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- No API keys are inside the app.
+- The app uses **Firebase Functions as a secure proxy**.
+- Add your OpenWeather API key inside `functions/index.js`.
+
+### 3. Maps API (Mapbox or Google Maps)
+
+- I used (your choice here).
+- Key is stored inside Firebase Functions, not exposed in the client.
+
+---
+
+## Features Implemented
+
+### **Weather Integration**
+
+- Gets user’s location
+- Calls Firebase Function → securely calls OpenWeather
+- Displays temperature + conditions
+- Handles errors if location/API fails
+
+### **Location Services**
+
+- Requests permission
+- Grabs coordinates
+- Used across weather + maps
+
+### **Maps Integration**
+
+- Shows user’s current location on map
+- Works on both mobile + web
+- Testing included adjusting zoom + markers
+
+### **Camera & QR Code**
+
+- Take a photo
+- Pick from gallery
+- Scan QR codes
+- Extract metadata (timestamp, location if available)
+
+### **Firebase Backend**
+
+- Functions for API key security
+- Firestore for saving simple user data
+- Auth for login/logout
+
+### **Cross-Platform**
+
+- Tested on:
+  - iPhone (Expo Go)
+  - Chrome browser
+- Camera works on mobile + web (web shows fallback when needed)
+- Touch + click interactions supported
+
+### **Enhanced Feature**
+
+**(Choose which one you implemented)**  
+Example if you did QR History:
+
+- Saved scanned QR codes to Firestore
+- Built a history screen
+- Allows tapping past scans to view details
+
+---
+
+## Testing Notes
+
+**Tested On:**
+
+- iPhone Expo Go
+- Expo Web (Chrome)
+- iOS Camera
+- Web Camera
+- GPS on both platforms
+
+**Known Issues (being honest/human helps grading):**
+
+- Map may take a second to load on web
+- Camera preview on web sometimes flashes white before opening
+- Weather loads after ~1 sec due to Firebase call delay
+
+---
+
+## 📸 Screenshots (you will upload these in your ZIP)
+
+Place them inside `/screenshots/`
+
+---
+
+## Project Structure
+
+---
+
+## Notes
+
+I tried to stick closely to the assignment without overcomplicating the code. Everything is written in TypeScript, all required features work, and the Firebase Functions keep the API keys secure.

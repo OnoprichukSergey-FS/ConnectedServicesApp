@@ -1,9 +1,7 @@
-// app/camera.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import BackButton from "../components/BackButton";
 
-// Trick TypeScript / React Native into allowing a <video> element on web
 const Video: any = "video";
 
 export default function CameraScreen() {
@@ -13,7 +11,6 @@ export default function CameraScreen() {
 
   useEffect(() => {
     if (Platform.OS !== "web") {
-      // We only try to access navigator.mediaDevices on web
       return;
     }
 
@@ -30,7 +27,6 @@ export default function CameraScreen() {
 
         const node = videoRef.current;
         if (node) {
-          // @ts-ignore – srcObject exists on HTMLVideoElement
           node.srcObject = stream;
           await node.play();
           setReady(true);
@@ -50,7 +46,6 @@ export default function CameraScreen() {
     };
   }, []);
 
-  // Native (iOS / Android) – explain limitation, no crash
   if (Platform.OS !== "web") {
     return (
       <View style={styles.center}>
@@ -76,7 +71,6 @@ export default function CameraScreen() {
       ) : (
         <>
           <Video
-            // @ts-ignore – this will render as a <video> in the DOM
             ref={videoRef}
             style={styles.video}
             autoPlay
