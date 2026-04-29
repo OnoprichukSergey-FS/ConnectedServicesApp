@@ -9,6 +9,8 @@ import {
 import BackButton from "../components/BackButton";
 import { getUserLocation } from "../services/locationService";
 
+const Iframe: any = "iframe";
+
 type Coords = {
   lat: number;
   lon: number;
@@ -25,9 +27,7 @@ export default function MapWebScreen() {
         const location = await getUserLocation();
         setCoords(location);
         setUsedFallback(false);
-      } catch (err) {
-        console.log("Web location error, using fallback:", err);
-
+      } catch {
         setCoords({
           lat: 28.4898,
           lon: -81.4742,
@@ -61,28 +61,40 @@ export default function MapWebScreen() {
     );
   }
 
+  const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
+
+  const mapUrl = `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${coords.lat},${coords.lon}&zoom=14&maptype=roadmap`;
+
   return (
     <ScrollView contentContainerStyle={styles.screen}>
       <BackButton />
 
       <View style={styles.header}>
-        <Text style={styles.badge}>Location Service</Text>
+        <Text style={styles.badge}>Google Maps Service</Text>
         <Text style={styles.title}>Map</Text>
         <Text style={styles.subtitle}>
           {usedFallback
-            ? "Location permission was unavailable, so this screen is showing fallback coordinates."
-            : "Live GPS coordinates from your browser location permission."}
+            ? "Showing fallback coordinates because location permission was unavailable."
+            : "Live map centered on your browser GPS location."}
         </Text>
       </View>
 
       <View style={styles.mapCard}>
-        <View style={styles.mapVisual}>
-          <View style={styles.gridLineHorizontal} />
-          <View style={styles.gridLineVertical} />
-          <View style={styles.pinCircle}>
-            <Text style={styles.pin}>📍</Text>
+        {apiKey ? (
+          <Iframe
+            src={mapUrl}
+            style={styles.iframe}
+            loading="lazy"
+            allowFullScreen
+            frameBorder="0"
+          />
+        ) : (
+          <View style={styles.fallbackMap}>
+            <Text style={styles.fallbackText}>
+              Add EXPO_PUBLIC_GOOGLE_MAPS_EMBED_KEY to show Google Maps.
+            </Text>
           </View>
-        </View>
+        )}
 
         <Text style={styles.locationTitle}>
           {usedFallback ? "Orlando, FL" : "Current Location"}
@@ -97,9 +109,10 @@ export default function MapWebScreen() {
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>Service Integration</Text>
         <Text style={styles.noteText}>
-          This web screen uses the same shared location service as Weather. The
-          UI uses a custom map-style preview so the project works safely on web
-          without requiring Google Maps or Mapbox.
+          This screen requests browser location permission, centers a real
+          Google Maps embed on the user&apos;s coordinates, and keeps the
+          coordinate cards synced with the same location service used by
+          Weather.
         </Text>
       </View>
     </ScrollView>
@@ -161,7 +174,7 @@ const styles = StyleSheet.create({
 
   mapCard: {
     width: "100%",
-    maxWidth: 560,
+    maxWidth: 620,
     backgroundColor: "#111827",
     borderWidth: 1,
     borderColor: "#253149",
@@ -170,45 +183,29 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  mapVisual: {
-    height: 220,
+  iframe: {
+    width: "100%",
+    height: 320,
+    borderRadius: 22,
+    marginBottom: 18,
+  },
+
+  fallbackMap: {
+    height: 320,
     borderRadius: 22,
     backgroundColor: "#0B1220",
     borderWidth: 1,
     borderColor: "#253149",
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
     marginBottom: 18,
-    overflow: "hidden",
   },
 
-  gridLineHorizontal: {
-    position: "absolute",
-    width: "100%",
-    height: 1,
-    backgroundColor: "rgba(139,124,255,0.18)",
-  },
-
-  gridLineVertical: {
-    position: "absolute",
-    height: "100%",
-    width: 1,
-    backgroundColor: "rgba(139,124,255,0.18)",
-  },
-
-  pinCircle: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
-    backgroundColor: "rgba(139,124,255,0.16)",
-    borderWidth: 1,
-    borderColor: "rgba(139,124,255,0.45)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  pin: {
-    fontSize: 34,
+  fallbackText: {
+    color: "#CBD5E1",
+    textAlign: "center",
+    fontSize: 14,
   },
 
   locationTitle: {
@@ -250,7 +247,7 @@ const styles = StyleSheet.create({
 
   noteCard: {
     width: "100%",
-    maxWidth: 560,
+    maxWidth: 620,
     backgroundColor: "#0B1220",
     borderWidth: 1,
     borderColor: "#253149",
