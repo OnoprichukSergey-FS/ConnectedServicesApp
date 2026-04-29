@@ -1,99 +1,202 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import BackButton from "../components/BackButton";
-
-const API_KEY = "697e62891c6ac5d1675c5098c559d7c2";
-const CITY = "Orlando";
-const STATE = "FL";
+import { getUserLocation } from "../services/locationService";
+import { getWeatherByCoords, WeatherData } from "../services/weatherService";
 
 export default function WeatherScreen() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchWeather = async () => {
+    const loadWeather = async () => {
       try {
         setErrorMsg(null);
 
-        const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY},${STATE},US&appid=${API_KEY}&units=imperial`;
+        const location = await getUserLocation();
 
-        const res = await fetch(url);
-        const json = await res.json();
+        const weather = await getWeatherByCoords(location.lat, location.lon);
 
-        if (!res.ok) {
-          console.log("Weather API error:", json);
-          throw new Error(json.message || "Weather request failed");
-        }
-
-        setData(json);
+        setData(weather);
       } catch (e: any) {
-        console.log("Weather fetch error:", e);
+        console.log("Weather error:", e);
         setErrorMsg(e.message || "Failed to load weather.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchWeather();
+    loadWeather();
   }, []);
+
+  const getWeatherIcon = () => {
+    if (!data) return "🌤️";
+
+    const main = data.main.toLowerCase();
+
+    if (main.includes("cloud")) return "☁️";
+    if (main.includes("rain")) return "🌧️";
+    if (main.includes("clear")) return "☀️";
+    if (main.includes("storm")) return "⛈️";
+    if (main.includes("mist") || main.includes("fog")) return "🌫️";
+
+    return "🌤️";
+  };
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.screen}>
         <BackButton />
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#8B7CFF" />
+        <Text style={styles.loadingText}>Getting your location...</Text>
       </View>
     );
   }
 
-  if (errorMsg || !data || !data.main) {
+  if (errorMsg || !data) {
     return (
-      <View style={styles.container}>
+      <View style={styles.screen}>
         <BackButton />
-        <Text style={styles.error}>Failed to load weather.</Text>
-        {errorMsg && <Text style={styles.helper}>{errorMsg}</Text>}
+
+        <View style={styles.card}>
+          <Text style={styles.errorTitle}>Weather unavailable</Text>
+          <Text style={styles.errorText}>
+            Could not load weather from your current location.
+          </Text>
+          {errorMsg && <Text style={styles.helper}>{errorMsg}</Text>}
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.screen}>
       <BackButton />
 
-      <Text style={styles.title}>Weather – Orlando, FL</Text>
+      <View style={styles.header}>
+        <Text style={styles.badge}>Live GPS + API Service</Text>
+        <Text style={styles.title}>Weather</Text>
+        <Text style={styles.subtitle}>
+          Real-time weather from your location.
+        </Text>
+      </View>
 
-      <Text style={styles.temp}>{Math.round(data.main.temp)}°F</Text>
-      <Text style={styles.condition}>{data.weather[0].description}</Text>
+      <View style={styles.weatherCard}>
+        <Text style={styles.weatherIcon}>{getWeatherIcon()}</Text>
+        <Text style={styles.location}>{data.name}</Text>
+        <Text style={styles.temp}>{Math.round(data.temp)}°F</Text>
+        <Text style={styles.condition}>{data.description}</Text>
+      </View>
+
+      <View style={styles.statsGrid}>
+        <InfoCard
+          label="Feels Like"
+          value={`${Math.round(data.feelsLike)}°F`}
+        />
+        <InfoCard label="Humidity" value={`${data.humidity}%`} />
+        <InfoCard label="Wind" value={`${Math.round(data.windSpeed)} mph`} />
+      </View>
+    </ScrollView>
+  );
+}
+
+function InfoCard({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.infoCard}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  screen: {
+    flexGrow: 1,
+    backgroundColor: "#070A12",
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 40,
+    padding: 24,
+    paddingTop: 90,
   },
-  title: { fontSize: 22, marginBottom: 10, fontWeight: "600" },
-  temp: { fontSize: 48, marginBottom: 10, fontWeight: "bold" },
-  condition: {
-    fontSize: 18,
-    color: "#555",
-    textTransform: "capitalize",
+
+  loadingText: {
+    color: "#CBD5E1",
+    marginTop: 14,
   },
-  error: {
-    color: "red",
-    fontSize: 16,
-    marginTop: 16,
-    textAlign: "center",
+
+  header: {
+    alignItems: "center",
+    marginBottom: 24,
   },
-  helper: {
-    marginTop: 4,
+
+  badge: {
+    color: "#8B7CFF",
     fontSize: 12,
-    color: "#888",
-    textAlign: "center",
-    paddingHorizontal: 24,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    marginBottom: 10,
   },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 42,
+    fontWeight: "900",
+  },
+
+  subtitle: {
+    color: "#CBD5E1",
+    fontSize: 15,
+    textAlign: "center",
+  },
+
+  weatherCard: {
+    width: "100%",
+    maxWidth: 560,
+    backgroundColor: "#111827",
+    borderRadius: 28,
+    padding: 30,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  weatherIcon: { fontSize: 48 },
+  location: { color: "#CBD5E1", fontSize: 16 },
+  temp: { color: "#FFFFFF", fontSize: 72, fontWeight: "900" },
+  condition: { color: "#94A3B8", fontSize: 18 },
+
+  statsGrid: {
+    width: "100%",
+    maxWidth: 560,
+    flexDirection: "row",
+    gap: 12,
+  },
+
+  infoCard: {
+    flex: 1,
+    backgroundColor: "#111827",
+    borderRadius: 18,
+    padding: 16,
+    alignItems: "center",
+  },
+
+  infoLabel: { color: "#94A3B8", fontSize: 12 },
+  infoValue: { color: "#FFFFFF", fontSize: 18, fontWeight: "900" },
+
+  card: {
+    backgroundColor: "#111827",
+    padding: 24,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+
+  errorTitle: { color: "#FFFFFF", fontSize: 20 },
+  errorText: { color: "#CBD5E1" },
+  helper: { color: "#94A3B8", fontSize: 12 },
 });

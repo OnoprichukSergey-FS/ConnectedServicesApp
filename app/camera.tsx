@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import BackButton from "../components/BackButton";
 
 const Video: any = "video";
@@ -10,9 +16,7 @@ export default function CameraScreen() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    if (Platform.OS !== "web") {
-      return;
-    }
+    if (Platform.OS !== "web") return;
 
     let stream: MediaStream | null = null;
 
@@ -26,6 +30,7 @@ export default function CameraScreen() {
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
         const node = videoRef.current;
+
         if (node) {
           node.srcObject = stream;
           await node.play();
@@ -41,49 +46,87 @@ export default function CameraScreen() {
 
     return () => {
       if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((track) => track.stop());
       }
     };
   }, []);
 
   if (Platform.OS !== "web") {
     return (
-      <View style={styles.center}>
+      <View style={styles.screen}>
         <BackButton />
-        <Text style={styles.title}>Camera</Text>
-        <Text style={styles.message}>
-          In this assignment build, the live camera preview is implemented on
-          the web version of the app. On mobile, this screen documents that
-          limitation so the app stays stable.
-        </Text>
+
+        <View style={styles.header}>
+          <Text style={styles.badge}>Device Service</Text>
+          <Text style={styles.title}>Camera</Text>
+          <Text style={styles.subtitle}>
+            Mobile fallback screen for camera service documentation.
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardIcon}>📷</Text>
+          <Text style={styles.cardTitle}>Mobile Preview</Text>
+          <Text style={styles.cardText}>
+            In this assignment build, the live camera preview is implemented on
+            the web version. On mobile, this screen documents that limitation so
+            the app stays stable.
+          </Text>
+        </View>
       </View>
     );
   }
 
-  // Web version with real camera preview
   return (
-    <View style={styles.webContainer}>
+    <View style={styles.screen}>
       <BackButton />
-      <Text style={styles.title}>Camera (Web)</Text>
+
+      <View style={styles.header}>
+        <Text style={styles.badge}>Device Service</Text>
+        <Text style={styles.title}>Camera</Text>
+        <Text style={styles.subtitle}>
+          Browser camera preview using getUserMedia.
+        </Text>
+      </View>
 
       {error ? (
-        <Text style={styles.error}>{error}</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardIcon}>⚠️</Text>
+          <Text style={styles.cardTitle}>Camera unavailable</Text>
+          <Text style={styles.cardText}>{error}</Text>
+        </View>
       ) : (
         <>
-          <Video
-            ref={videoRef}
-            style={styles.video}
-            autoPlay
-            playsInline
-            muted
-          />
-          <Text style={styles.message}>
-            This preview uses the browser camera via getUserMedia. In a full
-            version, you could add QR scanning or photo capture here.
-          </Text>
-          {!ready && (
-            <Text style={styles.subtle}>Waiting for camera to start…</Text>
-          )}
+          <View style={styles.cameraShell}>
+            {!ready && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#8B7CFF" />
+                <Text style={styles.loadingText}>Starting camera...</Text>
+              </View>
+            )}
+
+            <Video
+              ref={videoRef}
+              style={styles.video}
+              autoPlay
+              playsInline
+              muted
+            />
+
+            <View style={styles.cameraOverlay}>
+              <Text style={styles.liveDot}>● LIVE</Text>
+              <Text style={styles.overlayText}>Web Camera Feed</Text>
+            </View>
+          </View>
+
+          <View style={styles.noteCard}>
+            <Text style={styles.noteTitle}>Service Integration</Text>
+            <Text style={styles.noteText}>
+              This screen requests camera permission through the browser,
+              streams live video using getUserMedia, and safely stops the camera
+              when the screen unmounts.
+            </Text>
+          </View>
         </>
       )}
     </View>
@@ -91,49 +134,155 @@ export default function CameraScreen() {
 }
 
 const styles = StyleSheet.create({
-  webContainer: {
+  screen: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 40,
-  },
-  center: {
-    flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#070A12",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
+    padding: 24,
+    paddingTop: 90,
   },
+
+  header: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+
+  badge: {
+    color: "#8B7CFF",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 1.4,
+    marginBottom: 10,
+  },
+
   title: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 16,
+    color: "#FFFFFF",
+    fontSize: 42,
+    fontWeight: "900",
+    marginBottom: 8,
   },
+
+  subtitle: {
+    color: "#CBD5E1",
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+
+  cameraShell: {
+    width: "100%",
+    maxWidth: 420,
+    aspectRatio: 3 / 4,
+    backgroundColor: "#000",
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: "#253149",
+    overflow: "hidden",
+    position: "relative",
+  },
+
   video: {
     width: "100%",
-    maxWidth: 400,
-    aspectRatio: 3 / 4,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    height: "100%",
     backgroundColor: "#000",
+    objectFit: "cover",
+  } as any,
+
+  loadingOverlay: {
+    position: "absolute",
+    zIndex: 10,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#070A12",
   },
-  message: {
-    marginTop: 16,
-    fontSize: 14,
-    color: "#555",
-    textAlign: "center",
+
+  loadingText: {
+    color: "#CBD5E1",
+    marginTop: 12,
   },
-  subtle: {
-    marginTop: 8,
+
+  cameraOverlay: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: "rgba(7,10,18,0.75)",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+
+  liveDot: {
+    color: "#FF6B6B",
     fontSize: 12,
-    color: "#888",
+    fontWeight: "900",
+    marginBottom: 4,
   },
-  error: {
+
+  overlayText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+
+  noteCard: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "#0B1220",
+    borderWidth: 1,
+    borderColor: "#253149",
+    borderRadius: 20,
+    padding: 18,
     marginTop: 16,
+  },
+
+  noteTitle: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
+
+  noteText: {
+    color: "#CBD5E1",
     fontSize: 14,
-    color: "red",
+    lineHeight: 21,
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 460,
+    backgroundColor: "#111827",
+    borderWidth: 1,
+    borderColor: "#253149",
+    borderRadius: 24,
+    padding: 24,
+    alignItems: "center",
+  },
+
+  cardIcon: {
+    fontSize: 42,
+    marginBottom: 12,
+  },
+
+  cardTitle: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "900",
+    marginBottom: 8,
+  },
+
+  cardText: {
+    color: "#CBD5E1",
+    fontSize: 14,
+    lineHeight: 22,
     textAlign: "center",
   },
 });

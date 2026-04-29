@@ -1,12 +1,10 @@
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 
 export default function BackButton() {
-  const router = useRouter();
-
   return (
-    <TouchableOpacity style={styles.back} onPress={() => router.back()}>
-      <Text style={styles.text}>← Back</Text>
+    <TouchableOpacity style={styles.back} onPress={() => router.replace("/")}>
+      <Text style={styles.text}>← Dashboard</Text>
     </TouchableOpacity>
   );
 }
@@ -17,14 +15,15 @@ const styles = StyleSheet.create({
     top: 50,
     left: 20,
     zIndex: 20,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.65)",
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 8,
   },
+
   text: {
     color: "white",
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
