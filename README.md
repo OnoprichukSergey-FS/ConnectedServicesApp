@@ -1,140 +1,185 @@
-# Connected Services App – Assignment 3.8
 
-This project is my Module 3 Connected Services App built with Expo and TypeScript.  
-The goal of the assignment was to combine multiple connected features into one functional app that works on both **mobile** and **web**. My app includes weather integration, maps, camera features, QR scanning, and Firebase for backend services.
+# Connected Services App
 
-I kept everything as simple and clean as possible while meeting all the requirements.
+A cross-platform application built with React Native, Expo, and TypeScript to explore integrations with device services, external APIs, and platform-specific functionality.
 
----
+Originally developed as a Full Sail University project, the application brings together weather information, location services, camera access, maps, and a demonstration login interface.
 
-## How to Run the App
+## Features
 
-### 1. Install Dependencies
+- Dashboard with navigation to connected services
+- Demo login with locally persisted session status
+- Current weather information based on device location
+- Location permission requests and GPS coordinates
+- Map functionality with platform-specific implementations
+- Browser camera preview using the MediaDevices API
+- Profile and navigation screens
+- Loading states and error handling
+- Web and mobile application structure
 
-npm install
+## Tech Stack
 
-### 2. Start the App
-
-npx expo start
-
-You can test on:
-
-- **iPhone/Android** using Expo Go
-- **Web browser** by pressing `w` in the terminal
-
----
-
-## API / Firebase Setup
-
-### 1. Firebase
-
-Create a Firebase project:
-
-- Enable **Firestore**
-- Enable **Authentication (Email/Password)**
-- Create a **Web App** and copy your firebaseConfig into  
-  `/constants/firebase.ts`
-- Run:
-
-firebase init functions
-
-- Deploy with:
-  firebase deploy --only functions
-
-### 2. Weather API (OpenWeather)
-
-- No API keys are inside the app.
-- The app uses **Firebase Functions as a secure proxy**.
-- Add your OpenWeather API key inside `functions/index.js`.
-
-### 3. Maps API (Mapbox or Google Maps)
-
-- I used (your choice here).
-- Key is stored inside Firebase Functions, not exposed in the client.
-
----
-
-## Features Implemented
-
-### **Weather Integration**
-
-- Gets user’s location
-- Calls Firebase Function → securely calls OpenWeather
-- Displays temperature + conditions
-- Handles errors if location/API fails
-
-### **Location Services**
-
-- Requests permission
-- Grabs coordinates
-- Used across weather + maps
-
-### **Maps Integration**
-
-- Shows user’s current location on map
-- Works on both mobile + web
-- Testing included adjusting zoom + markers
-
-### **Camera & QR Code**
-
-- Take a photo
-- Pick from gallery
-- Scan QR codes
-- Extract metadata (timestamp, location if available)
-
-### **Firebase Backend**
-
-- Functions for API key security
-- Firestore for saving simple user data
-- Auth for login/logout
-
-### **Cross-Platform**
-
-- Tested on:
-  - iPhone (Expo Go)
-  - Chrome browser
-- Camera works on mobile + web (web shows fallback when needed)
-- Touch + click interactions supported
-
-### **Enhanced Feature**
-
-**(Choose which one you implemented)**  
-Example if you did QR History:
-
-- Saved scanned QR codes to Firestore
-- Built a history screen
-- Allows tapping past scans to view details
-
----
-
-## Testing Notes
-
-**Tested On:**
-
-- iPhone Expo Go
-- Expo Web (Chrome)
-- iOS Camera
-- Web Camera
-- GPS on both platforms
-
-**Known Issues (being honest/human helps grading):**
-
-- Map may take a second to load on web
-- Camera preview on web sometimes flashes white before opening
-- Weather loads after ~1 sec due to Firebase call delay
-
----
-
-## 📸 Screenshots (you will upload these in your ZIP)
-
-Place them inside `/screenshots/`
-
----
+- React Native
+- Expo
+- Expo Router
+- TypeScript
+- React Hooks
+- Expo Location
+- React Native Maps
+- AsyncStorage
+- OpenWeather API
+- Firebase SDK (configuration and service helpers)
 
 ## Project Structure
 
----
+```text
+app/
+  _layout.tsx
+  index.tsx
+  weather.tsx
+  map.tsx
+  map.web.tsx
+  camera.tsx
+  profile.tsx
 
-## Notes
+components/
+  BackButton.tsx
 
-I tried to stick closely to the assignment without overcomplicating the code. Everything is written in TypeScript, all required features work, and the Firebase Functions keep the API keys secure.
+services/
+  authService.ts
+  firebase.ts
+  locationService.ts
+  weatherService.ts
+
+screenshots/
+```
+
+## How It Works
+
+### Demo Authentication
+
+The dashboard uses a demonstration login with predefined credentials. Session status is stored locally using AsyncStorage.
+
+This is not production authentication and should not be used to protect sensitive information.
+
+### Weather Integration
+
+The application requests location permission, retrieves the device's coordinates, and makes a request to the OpenWeather API.
+
+The weather screen displays temperature, conditions, humidity, wind speed, and feels-like temperature.
+
+The API request is made directly from the application using an environment variable.
+
+### Maps and Location
+
+The project demonstrates location-aware functionality and platform-specific map implementations.
+
+Map behavior differs between web and native platforms.
+
+### Camera Integration
+
+The web camera screen requests browser camera permission using getUserMedia.
+
+It displays a live video preview and releases the camera stream when the component unmounts.
+
+The native camera screen currently provides an informational fallback rather than a live camera preview.
+
+### Firebase
+
+The repository contains Firebase initialization and authentication service helpers.
+
+The Firebase configuration currently uses placeholder values. The demonstration login in the main screen does not use Firebase Authentication.
+
+## Getting Started
+
+### Requirements
+
+- Node.js
+- npm
+- Expo-compatible development environment
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/OnoprichukSergey-FS/ConnectedServicesApp.git
+```
+
+Open the project:
+
+```bash
+cd ConnectedServicesApp
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start Expo:
+
+```bash
+npm start
+```
+
+Run the web application:
+
+```bash
+npm run web
+```
+
+### Weather API Configuration
+
+The weather service reads an API key from:
+
+`EXPO_PUBLIC_OPENWEATHER_API_KEY`
+
+This is a client-side environment variable and should not be treated as a secure secret.
+
+A production application should use an appropriate backend or server-side proxy for API credentials that must remain confidential.
+
+### Firebase Configuration
+
+Replace the placeholder values in `services/firebase.ts` with configuration from your own Firebase project if you intend to use the Firebase services.
+
+Configure authentication and Firestore security rules appropriately before using real accounts or user data.
+
+## Technical Concepts Demonstrated
+
+- React functional components and Hooks
+- TypeScript type definitions
+- Asynchronous API requests
+- Device permissions and location services
+- Platform-specific implementations
+- Navigation using Expo Router
+- Local session persistence
+- Error and loading state management
+- Integration of third-party services
+
+## Current Limitations
+
+- Login uses demonstration credentials rather than Firebase Authentication
+- QR scanning and photo capture are not implemented
+- The camera preview is available on web, with a mobile fallback
+- Firebase integration requires configuration
+- Map behavior varies between platforms
+- Weather API credentials are referenced in client-side code
+
+## Future Improvements
+
+- Implement production authentication
+- Move sensitive API requests to a backend
+- Add native camera capture and QR scanning
+- Improve cross-platform map support
+- Add automated tests
+- Expand Firebase integration
+
+## Author
+
+**Sergey Onoprichuk**
+
+Web Development Graduate | Cybersecurity Student
+
+[GitHub Profile](https://github.com/OnoprichukSergey-FS)
